@@ -75,11 +75,8 @@ class RegistroWebController extends Controller
             $data['Estado_Registro'] = 'ACT';
             $data['Fecha_Registro'] = $request->input('Fecha_Registro', now()->format('Y-m-d'));
             $data['Tiene_Firma_Huella'] = $request->has('Tiene_Firma_Huella') ? 1 : 0;
-            $data['Orientador'] = Auth::user()->usuario;
-            $data['fecha_ini_vigencia'] =  $request->input('Fecha_Registro', now()->format('Y-m-d'));
-            $data['fecha_fin_vigencia'] = \Carbon\Carbon::parse($data['Fecha_Registro'])
-                ->addYear()
-                ->format('Y-m-d');
+            $data['Orientador'] = $request->input('Orientador'); // Asegúrate de que venga el COD_VENDEDOR del select
+
 
             RegistroAfiliado::create($data);
 
