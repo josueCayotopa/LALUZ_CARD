@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Luzcard\RegistroWebController;
+use App\Http\Controllers\PacienteController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas de Login (Se mantienen igual)
@@ -20,4 +21,5 @@ Route::middleware(['auth'])->group(function () {
     
     // Guardar (POST)
     Route::post('/afiliados', [RegistroWebController::class, 'store'])->name('afiliados.store');
+    Route::get('/paciente/buscar/{dni}', [PacienteController::class, 'buscarPorDni']);
 });

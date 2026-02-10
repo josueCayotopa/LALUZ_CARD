@@ -52,17 +52,28 @@
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="group">
-                        <label class="block text-sm font-bold text-[#8B8889] mb-1.5 group-hover:text-[#B11A1A] transition-colors">DNI
-                            *</label>
-                        <input type="text" name="Afiliado_DNI" maxlength="8" value="{{ old('Afiliado_DNI') }}" required placeholder="Ingrese 8 dígitos" class="w-full rounded-md border border-gray-300 bg-white px-4 py-2.5 text-gray-700 text-sm shadow-sm transition-all duration-200 
-                                      hover:border-[#B11A1A] hover:bg-[#fffafa] hover:shadow-md
-                                      focus:border-[#B11A1A] focus:ring-1 focus:ring-[#B11A1A] focus:outline-none 
-                                      @error('Afiliado_DNI') border-red-500 @enderror">
-                        @error('Afiliado_DNI')
-                        <p class="text-xs text-red-600 mt-1 font-medium">{{ $message }}</p>
-                        @enderror
-                    </div>
+                 <div class="space-y-2">
+    <label for="Afiliado_DNI" class="block text-sm font-bold text-gray-700 uppercase tracking-wider">
+        DNI del Afiliado *
+    </label>
+    <div class="relative flex gap-2">
+        <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fa-solid fa-address-card text-gray-400"></i>
+            </div>
+            <input type="text" name="Afiliado_DNI" id="Afiliado_DNI" 
+                   value="{{ old('Afiliado_DNI') }}" 
+                   maxlength="8"
+                   class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-[#B11A1A] focus:border-[#B11A1A] sm:text-sm" 
+                   placeholder="Ingrese 8 dígitos">
+        </div>
+        <button type="button" onclick="buscarPaciente()" 
+                class="inline-flex items-center px-4 py-2 bg-[#B11A1A] text-white text-sm font-bold rounded-lg hover:bg-[#8f1515] transition shadow-sm">
+            <i class="fa-solid fa-magnifying-glass mr-2"></i> Buscar
+        </button>
+    </div>
+    @error('Afiliado_DNI') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+</div>
 
                     <div class="group">
                         <label class="block text-sm font-bold text-[#8B8889] mb-1.5 group-hover:text-[#B11A1A] transition-colors">Nombres
@@ -169,3 +180,4 @@
         </form>
     </div>
 </div>
+<>

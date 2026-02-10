@@ -120,5 +120,57 @@
             openModal();
         });
     @endif
+    function buscarPaciente() {
+    const dni = document.getElementById('Afiliado_DNI').value;
+    const btnBusqueda = event.currentTarget;
+
+    if (dni.length !== 8) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'DNI Inválido',
+            text: 'Por favor, ingrese 8 dígitos.'
+        });
+        return;
+    }
+
+    // Efecto de carga en el botón
+    const originalContent = btnBusqueda.innerHTML;
+    btnBusqueda.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+    btnBusqueda.disabled = true;
+
+    fetch(`/paciente/buscar/${dni}`)
+        .then(response => {
+            if (!response.ok) throw new Error('No encontrado');
+            return response.json();
+        })
+        .then(data => {
+            // Cargamos el nombre completo en el campo correspondiente
+            // Ajusta el ID 'Afiliado_Nombres' según tu formulario
+            const inputNombre = document.querySelector('input[name="Afiliado_Nombres"]');
+            if (inputNombre) {
+                inputNombre.value = data.nombres;
+                inputNombre.classList.add('bg-green-50'); // Feedback visual de éxito
+            }
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'Paciente Encontrado',
+                text: data.nombres,
+                timer: 1500,
+                showConfirmButton: false
+            });
+        })
+        .catch(error => {
+            Swal.fire({
+                icon: 'info',
+                title: 'No registrado',
+                text: 'El paciente no existe en el sistema base de la clínica. Puede registrar los datos manualmente.'
+            });
+        })
+        .finally(() => {
+            btnBusqueda.innerHTML = originalContent;
+            btnBusqueda.disabled = false;
+        });
+}
 </script>
 @endpush
