@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Luzcard;
 use App\Http\Controllers\Controller;
 use App\Models\RegistroAfiliado;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -20,9 +21,9 @@ class RegistroWebController extends Controller
         // Buscador simple
         if ($request->has('buscar') && $request->buscar != '') {
             $busqueda = $request->buscar;
-            $query->where(function($q) use ($busqueda) {
+            $query->where(function ($q) use ($busqueda) {
                 $q->where('Afiliado_DNI', 'like', "%$busqueda%")
-                  ->orWhere('Afiliado_Nombres', 'like', "%$busqueda%");
+                    ->orWhere('Afiliado_Nombres', 'like', "%$busqueda%");
             });
         }
 
@@ -69,9 +70,8 @@ class RegistroWebController extends Controller
             $data['Fecha_Registro'] = now();
             $data['Estado_Registro'] = 'ACT';
             $data['Tiene_Firma_Huella'] = $request->has('Tiene_Firma_Huella') ? 1 : 0;
-            
-            // Si tienes el nombre del usuario logueado en sesión o Auth
-            // $data['Orientador'] = auth()->user()->name;
+            $data['Orientador'] = Auth::user()->usuario;
+
 
             RegistroAfiliado::create($data);
 
@@ -79,11 +79,10 @@ class RegistroWebController extends Controller
 
             // Redirigir al index con mensaje de éxito
             return redirect()->route('dashboard')->with('success', 'Afiliado registrado correctamente.');
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("Error Web LUZCARD: " . $e->getMessage());
-            
+
             return back()
                 ->withInput()
                 ->with('error', 'Ocurrió un error al guardar: ' . $e->getMessage());
