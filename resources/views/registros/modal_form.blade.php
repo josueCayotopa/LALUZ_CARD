@@ -33,7 +33,7 @@
                         <select name="Orientador" id="Orientador" required class="w-full bg-transparent border-none p-0 font-semibold text-gray-800 text-sm focus:ring-0 cursor-pointer hover:text-[#B11A1A] transition-colors">
                             <option value="" disabled selected>Seleccione orientador...</option>
                             @foreach ($vendedores as $vendedor)
-                            <option value="{{ $vendedor->DES_VENDEDOR }}" {{ old('Orientador') == $vendedor->DES_VENDEDOR ? 'selected' : '' }}>
+                            <option value="{{ $vendedor->COD_VENDE }}" {{ old('Orientador') == $vendedor->COD_VENDE ? 'selected' : '' }}>
                                 {{ $vendedor->DES_VENDEDOR }}
                             </option>
                             @endforeach
