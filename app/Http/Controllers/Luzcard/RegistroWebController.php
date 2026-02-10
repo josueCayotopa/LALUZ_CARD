@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Luzcard;
 
 use App\Http\Controllers\Controller;
 use App\Models\RegistroAfiliado;
+use App\Models\Vendedor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -29,8 +30,9 @@ class RegistroWebController extends Controller
 
         // Paginación de 10 en 10, ordenado por el más reciente
         $registros = $query->orderBy('ID_Registro', 'desc')->paginate(10);
+        $vendedores = Vendedor::where('IND_BAJA', 'N')->get();
 
-        return view('registros.index', compact('registros'));
+        return view('registros.index', compact('registros', 'vendedores'));
     }
 
     /**
@@ -38,6 +40,7 @@ class RegistroWebController extends Controller
      */
     public function create()
     {
+
         return view('registros.create');
     }
 

@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class RegistroAfiliado extends Model
 {
-  use HasFactory;
+    use HasFactory;
 
     // 1. Definir la tabla explícitamente
     protected $table = 'Registros_Afiliados_LUZCARD';
@@ -37,7 +37,9 @@ class RegistroAfiliado extends Model
         'Tiene_Firma_Huella',
         'Contrato_adjunto',
         'Estado_Registro',
-        'Fecha_Creacion'
+        'Fecha_Creacion',
+        'fecha_ini_vigencia',
+        'fecha_fin_vigencia',
     ];
 
     // 5. Casts para asegurar tipos de datos correctos
@@ -45,6 +47,8 @@ class RegistroAfiliado extends Model
         'Fecha_Registro' => 'date',
         'Fecha_Creacion' => 'datetime',
         'Tiene_Firma_Huella' => 'boolean', // Convierte el BIT de SQL Server a true/false
+          'fecha_ini_vigencia' => 'date',
+        'fecha_fin_vigencia' => 'date',
     ];
 
     /**
