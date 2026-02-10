@@ -55,8 +55,9 @@ class RegistroWebController extends Controller
             'Afiliado_DNI'       => 'required|digits:8',
             'Afiliado_Telefono'  => 'nullable|string|max:20',
             'Afiliado_Email'     => 'nullable|email|max:100',
+            'Fecha_Registro' => 'required|date',
             'Contrato_adjunto'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120', // Max 5MB
-        ]);
+        ]); 
 
         DB::beginTransaction();
         try {
@@ -72,6 +73,7 @@ class RegistroWebController extends Controller
             // 3. Defaults
             $data['Fecha_Registro'] = now();
             $data['Estado_Registro'] = 'ACT';
+            $data['Fecha_Registro'] = $request->input('Fecha_Registro', now()->format('Y-m-d'));
             $data['Tiene_Firma_Huella'] = $request->has('Tiene_Firma_Huella') ? 1 : 0;
             $data['Orientador'] = Auth::user()->usuario;
 

@@ -40,6 +40,9 @@ class RegistroAfiliado extends Model
         'Fecha_Creacion',
         'fecha_ini_vigencia',
         'fecha_fin_vigencia',
+        'producto',
+        'boeleta',
+        'total'
     ];
 
     // 5. Casts para asegurar tipos de datos correctos
@@ -47,7 +50,7 @@ class RegistroAfiliado extends Model
         'Fecha_Registro' => 'date',
         'Fecha_Creacion' => 'datetime',
         'Tiene_Firma_Huella' => 'boolean', // Convierte el BIT de SQL Server a true/false
-          'fecha_ini_vigencia' => 'date',
+        'fecha_ini_vigencia' => 'date',
         'fecha_fin_vigencia' => 'date',
     ];
 
