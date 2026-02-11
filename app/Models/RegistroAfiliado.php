@@ -41,8 +41,9 @@ class RegistroAfiliado extends Model
         'fecha_ini_vigencia',
         'fecha_fin_vigencia',
         'producto',
-        'boeleta',
-        'total'
+        'boleta',
+        'total',
+        'Ruta_Contrato'
     ];
 
     // 5. Casts para asegurar tipos de datos correctos

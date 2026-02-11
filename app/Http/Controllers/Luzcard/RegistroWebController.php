@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class RegistroWebController extends Controller
 {
@@ -38,10 +40,46 @@ class RegistroWebController extends Controller
     /**
      * Muestra el formulario de creación (Página completa, no modal)
      */
+
+    public function generarContratoPdf($afiliado)
+    {
+        // Calculamos la fecha de fin (1 año después de la fecha de registro) 
+        $fechaFin = \Carbon\Carbon::parse($afiliado->Fecha_Registro)->addYear()->format('d/m/Y');
+
+        // Cargar la vista con los datos
+        $pdf = Pdf::loadView('registros.pdf.contrato_luzcard', compact('afiliado', 'fechaFin'));
+
+        // Definir nombre y ruta del archivo
+        $nombreArchivo = "Contrato_LuzCard_{$afiliado->Afiliado_DNI}_" . time() . ".pdf";
+        $rutaCarpeta = 'contratos_generados';
+        $rutaCompleta = "{$rutaCarpeta}/{$nombreArchivo}";
+
+        // Almacenar el PDF en el disco 'public' (storage/app/public/contratos_generados)
+        \Illuminate\Support\Facades\Storage::disk('public')->put($rutaCompleta, $pdf->output());
+
+        // Guardar la ruta en la base de datos
+        $afiliado->update([
+            'Ruta_Contrato' => $rutaCompleta
+        ]);
+
+        return $pdf->download($nombreArchivo);
+    }
     public function create()
     {
 
         return view('registros.create');
+    }
+    public function reimprimir($id)
+    {
+        $afiliado = RegistroAfiliado::findOrFail($id);
+
+        // Si ya tiene ruta, descargamos el archivo existente
+        if ($afiliado->Ruta_Contrato && Storage::disk('public')->exists($afiliado->Ruta_Contrato)) {
+            return Storage::disk('public')->download($afiliado->Ruta_Contrato);
+        }
+
+        // Si no existe, lo generamos usando tu función actual
+        return $this->generarContratoPdf($afiliado);
     }
 
     /**
@@ -69,19 +107,17 @@ class RegistroWebController extends Controller
                 $path = $request->file('Contrato_adjunto')->store('contratos', 'public');
                 $data['Contrato_adjunto'] = $path;
             }
-
             // 3. Defaults
-            $data['Fecha_Registro'] = now();
             $data['Estado_Registro'] = 'ACT';
             $data['Fecha_Registro'] = $request->input('Fecha_Registro', now()->format('Y-m-d'));
             $data['Tiene_Firma_Huella'] = $request->has('Tiene_Firma_Huella') ? 1 : 0;
-            $data['Orientador'] = $request->input('Orientador'); // Asegúrate de que venga el COD_VENDEDOR del select
+            $data['Orientador'] = $request->input('Orientador');
+            $afiliado = RegistroAfiliado::create($data);
 
-
-            RegistroAfiliado::create($data);
-
-            DB::commit();
-
+            // Generar PDF del contrato
+            if ($request->has('generar_pdf')) {
+                return $this->generarContratoPdf($afiliado);
+            }
             // Redirigir al index con mensaje de éxito
             return redirect()->route('dashboard')->with('success', 'Afiliado registrado correctamente.');
         } catch (\Exception $e) {
