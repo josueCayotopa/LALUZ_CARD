@@ -8,9 +8,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Config;
 
-class MaeUsuario extends TenantModel
+// Cambia "extends TenantModel" por "extends Authenticatable"
+class MaeUsuario extends Authenticatable
 {
-    use HasFactory, Notifiable;
+
+    use  Notifiable;
 
     protected $table = 'MAE_USUARIO';
 
@@ -50,7 +52,7 @@ class MaeUsuario extends TenantModel
         'FEC_CREACION',
         'FIRMA_DIGITAL',
         'FIRMA_FECHA_SUBIDA',
-         'IND_GERENTE', // Agregado indicador de gerente
+        'IND_GERENTE', // Agregado indicador de gerente
     ];
 
     /**
@@ -72,83 +74,15 @@ class MaeUsuario extends TenantModel
     {
         return $this->DES_PASSWORD;
     }
-    public function  isAdmin()
-    {
-        if ($this->IND_ADMIN) {
-            return true;
-        }
-        return false;
-    }
 
-    public function getConnectionName()
-    {
-        return Config::get('database.default');
-    }
 
-    // Relación con Empresa (un usuario pertenece a una empresa)
-  
-    public function sucursalesPermitidas(string $empresa): Collection
+    public function getRememberTokenName()
     {
-        return $this->sucursales()
-            ->wherePivot('COD_EMPRESA', $empresa)
-            ->orderBy('MAE_SUCURSAL.NOM_SUCURSAL')
-            ->get(['MAE_SUCURSAL.COD_SUCURSAL', 'MAE_SUCURSAL.NOM_SUCURSAL']);
+        return null;
     }
-  
-    public function user()
+    public function setRememberToken($value) {}
+    public function getRememberToken()
     {
-        return $this->hasOne(User::class, 'usuario', 'COD_USUARIO');
+        return null;
     }
-
-    public function users()
-    {
-        return $this->hasOne(User::class, 'usuario', 'COD_USUARIO');
-    }
-    /** ¿Tiene acceso a la intranet (según MAE + estado activo en users)? */
-    public function tieneAccesoIntranet(): bool
-    {
-        // IND_INTRANET en MAE + active en users
-        return (bool) ($this->active && optional($this->mae)->IND_INTRANET);
-    }
-    public function getCODUSUARIOAttribute($value)
-    {
-        return is_string($value) ? rtrim($value) : $value;
-    }
-    /**
-     * Verifica si el usuario tiene firma registrada
-     */
-    
-    /**
-     * Verifica si el usuario tiene firma registrada
-     */
-    public function tieneFirma(): bool
-    {
-        return !empty($this->FIRMA_DIGITAL);
-    }
-
-    /**
-     * Obtiene la firma en formato base64
-     */
-    public function getFirmaBase64Attribute()
-    {
-        return $this->FIRMA_DIGITAL;
-    }
-
-    /**
-     * Verifica si el usuario es gerente
-     */
-    public function esGerente(): bool
-    {
-        return $this->IND_GERENTE === 'S';
-    }
-
-    /**
-     * Scope para obtener solo gerentes
-     */
-    public function scopeGerente($query)
-    {
-        return $query->where('IND_GERENTE', 'S');
-    }
-    
-   
 }

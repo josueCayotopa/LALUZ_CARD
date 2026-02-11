@@ -129,50 +129,29 @@ class AdminController extends Controller
             'password'    => 'required',
         ]);
 
-        $empresa = $request->empresa;
-
-        if (!isset($this->empresaToConnection[$empresa])) {
-            throw ValidationException::withMessages([
-                'empresa' => ['La empresa seleccionada no es válida.'],
-            ]);
-        }
-
-        $connectionKey = $this->empresaToConnection[$empresa];
+        $connectionKey = $this->empresaToConnection[$request->empresa];
         Config::set('database.default', $connectionKey);
         DB::purge($connectionKey);
-        DB::reconnect($connectionKey);
 
         try {
             $mae = MaeUsuario::where('COD_USUARIO', $request->nom_usuario)->first();
+
             if (!$mae || !$this->verifyPassword($request->password, $mae->DES_PASSWORD)) {
                 throw ValidationException::withMessages([
-                    'nom_usuario' => ['Las credenciales proporcionadas son incorrectas.'],
+                    'nom_usuario' => ['Credenciales incorrectas en el sistema de la clínica.'],
                 ]);
             }
 
-            $user = User::where('usuario', $mae->COD_USUARIO)->first();
-            if (!$user) {
-                throw ValidationException::withMessages([
-                    'nom_usuario' => ['El usuario no tiene perfil en el sistema.'],
-                ]);
-            }
+            // LOGUEO DIRECTO USANDO EL MODELO DE LA CLÍNICA
+            Auth::login($mae);
 
-            // 1) Autentica
-            Auth::login($user);
-
-            // 2) Regenera la sesión INMEDIATAMENTE
             $request->session()->regenerate();
-
-            // 3) Guarda empresa / conexión en la sesión (para el punto 1 del User)
-            Session::put('empresa', $empresa);
+            Session::put('empresa', $request->empresa);
             Session::put('db_connection', $connectionKey);
 
             return redirect()->intended(route('dashboard'));
         } catch (\Exception $e) {
-            Log::error('Error en login: ' . $e->getMessage());
-            throw ValidationException::withMessages([
-                'error' => ['Error de conexión: ' . $e->getMessage()],
-            ]);
+            return back()->withErrors(['nom_usuario' => 'Error: ' . $e->getMessage()]);
         }
     }
 
