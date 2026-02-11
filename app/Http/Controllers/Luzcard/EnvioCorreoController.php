@@ -123,8 +123,8 @@ class EnvioCorreoController extends Controller
 
             $rutaTarjeta = $this->generarImagenTarjeta($afiliado);
 
-            // El envío se procesa aquí. Si falla, el catch lo atrapará.
-            Mail::to($afiliado->Afiliado_Email)->send(new TarjetaLuzCardMail($afiliado, $rutaTarjeta));
+            // El envío se procesa aquí. Si falla, el catch lo atrapará
+                    Mail::to($afiliado->Afiliado_Email)->send(new TarjetaLuzCardMail($afiliado, $rutaTarjeta));
 
             Log::info("Tarjeta enviada exitosamente a: {$afiliado->Afiliado_Email}");
             return back()->with('success', '✅ ¡Tarjeta enviada exitosamente a ' . $afiliado->Afiliado_Email . '!');
