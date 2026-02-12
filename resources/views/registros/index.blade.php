@@ -93,6 +93,10 @@
                             @csrf
                         </form>
                         @endif
+                       {{-- Cambia $registro por $reg --}}
+<button onclick='editAfiliado(@json($reg))' class="text-blue-600 hover:text-blue-900 p-2" title="Editar Afiliado">
+    <i class="fa-solid fa-pen text-xl"></i> Editar
+</button>
 
                     </td>
                 </tr>
@@ -241,5 +245,47 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         @endif
     });
+    function editAfiliado(afiliado) {
+    const form = document.getElementById('formAfiliado');
+    const methodField = document.getElementById('methodField');
+    
+    // 1. Cambiar Action y Método
+    form.action = `/afiliados/${afiliado.ID_Registro}`;
+    methodField.value = 'PUT';
+
+    // 2. Llenar campos de Texto/Select
+    form.querySelector('[name="Afiliado_DNI"]').value = afiliado.Afiliado_DNI;
+    form.querySelector('[name="Afiliado_Nombres"]').value = afiliado.Afiliado_Nombres;
+    form.querySelector('[name="Afiliado_Telefono"]').value = afiliado.Afiliado_Telefono;
+    form.querySelector('[name="Afiliado_Email"]').value = afiliado.Afiliado_Email;
+    form.querySelector('[name="Afiliado_Direccion"]').value = afiliado.Afiliado_Direccion;
+    form.querySelector('[name="Fecha_Registro"]').value = afiliado.Fecha_Registro.split('T')[0]; // Formato Y-m-d
+    form.querySelector('[name="Orientador"]').value = afiliado.Orientador;
+
+    // Datos Apoderado
+    form.querySelector('[name="Apoderado_Parentesco"]').value = afiliado.Apoderado_Parentesco || '';
+    form.querySelector('[name="Apoderado_Nombres"]').value = afiliado.Apoderado_Nombres || '';
+    form.querySelector('[name="Apoderado_DNI"]').value = afiliado.Apoderado_DNI || '';
+    form.querySelector('[name="Apoderado_Telefono"]').value = afiliado.Apoderado_Telefono || '';
+
+    // Checkbox
+    form.querySelector('[name="Tiene_Firma_Huella"]').checked = afiliado.Tiene_Firma_Huella == 1;
+
+    // 3. Cambiar título del modal
+    document.querySelector('#modalRegistro h2').innerHTML = '<i class="fa-regular fa-pen-to-square"></i> Editar Afiliado';
+
+    // 4. Abrir Modal
+    document.getElementById('modalRegistro').classList.remove('hidden');
+}
+
+// Función para resetear el modal cuando sea "Nuevo Registro"
+function openCreateModal() {
+    const form = document.getElementById('formAfiliado');
+    form.reset();
+    form.action = "{{ route('afiliados.store') }}";
+    document.getElementById('methodField').value = 'POST';
+    document.querySelector('#modalRegistro h2').innerHTML = '<i class="fa-regular fa-id-card"></i> Registro de Afiliado';
+    document.getElementById('modalRegistro').classList.remove('hidden');
+}
 </script>
 @endpush
