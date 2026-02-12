@@ -22,6 +22,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Guardar (POST)
     Route::post('/afiliados', [RegistroWebController::class, 'store'])->name('afiliados.store');
+    Route::put('/afiliados/{id}', [RegistroWebController::class, 'update'])->name('afiliados.update');
     Route::get('/paciente/buscar/{dni}', [PacienteController::class, 'buscarPorDni']);
     Route::get('/afiliado/reimprimir/{id}', [RegistroWebController::class, 'reimprimir'])->name('afiliados.reimprimir');
     Route::prefix('luzcard')->name('luzcard.')->group(function () {

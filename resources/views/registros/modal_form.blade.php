@@ -8,8 +8,10 @@
             <button type="button" onclick="closeModal()" class="text-white/80 hover:text-white text-2xl transition hover:scale-110">&times;</button>
         </div>
 
-        <form action="{{ route('afiliados.store') }}" method="POST" enctype="multipart/form-data" class="p-8 space-y-8">
-            @csrf
+<form id="formAfiliado" action="{{ route('afiliados.store') }}" method="POST" enctype="multipart/form-data" class="p-8 space-y-8">
+    @csrf
+    <input type="hidden" name="_method" id="methodField" value="POST">
+   
 
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex flex-col sm:flex-row justify-between items-center text-sm shadow-sm">
                 <div class="flex items-center gap-2">

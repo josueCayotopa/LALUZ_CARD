@@ -129,4 +129,54 @@ class RegistroWebController extends Controller
                 ->with('error', 'Ocurrió un error al guardar: ' . $e->getMessage());
         }
     }
+    /**
+ * Actualiza el registro de un afiliado existente
+ */
+public function update(Request $request, $id)
+{
+    // 1. Validar datos
+    $request->validate([
+        'Afiliado_Nombres'   => 'required|string|max:150',
+        'Afiliado_DNI'       => 'required|digits:8',
+        'Afiliado_Telefono'  => 'nullable|string|max:20',
+        'Afiliado_Email'     => 'nullable|email|max:100',
+        'Fecha_Registro'     => 'required|date',
+        'Contrato_adjunto'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+    ]);
+
+    $afiliado = RegistroAfiliado::findOrFail($id);
+
+    DB::beginTransaction();
+    try {
+        // Obtenemos todos los datos excepto los restringidos
+        $data = $request->except([
+            'fecha_ini_vigencia', 
+            'fecha_fin_vigencia', 
+            'producto', 
+            'boleta', 
+            'total'
+        ]);
+
+        // Manejo de nuevo archivo si se sube uno
+        if ($request->hasFile('Contrato_adjunto')) {
+            // Opcional: Eliminar el archivo anterior si existe
+            if ($afiliado->Contrato_adjunto) {
+                Storage::disk('public')->delete($afiliado->Contrato_adjunto);
+            }
+            $data['Contrato_adjunto'] = $request->file('Contrato_adjunto')->store('contratos', 'public');
+        }
+
+        // Checkbox de firma
+        $data['Tiene_Firma_Huella'] = $request->has('Tiene_Firma_Huella') ? 1 : 0;
+
+        $afiliado->update($data);
+
+        DB::commit();
+        return redirect()->route('dashboard')->with('success', 'Registro actualizado correctamente.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error("Error Update LUZCARD: " . $e->getMessage());
+        return back()->with('error', 'Error al actualizar: ' . $e->getMessage());
+    }
+}
 }
