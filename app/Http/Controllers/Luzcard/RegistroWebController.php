@@ -111,7 +111,7 @@ class RegistroWebController extends Controller
             $data['Estado_Registro'] = 'ACT';
             $data['Fecha_Registro'] = $request->input('Fecha_Registro', now()->format('Y-m-d'));
             $data['Tiene_Firma_Huella'] = $request->has('Tiene_Firma_Huella') ? 1 : 0;
-            $data['Orientador'] = $request->input('Orientador');
+
             $afiliado = RegistroAfiliado::create($data);
 
             // Generar PDF del contrato
@@ -130,53 +130,61 @@ class RegistroWebController extends Controller
         }
     }
     /**
- * Actualiza el registro de un afiliado existente
- */
-public function update(Request $request, $id)
-{
-    // 1. Validar datos
-    $request->validate([
-        'Afiliado_Nombres'   => 'required|string|max:150',
-        'Afiliado_DNI'       => 'required|digits:8',
-        'Afiliado_Telefono'  => 'nullable|string|max:20',
-        'Afiliado_Email'     => 'nullable|email|max:100',
-        'Fecha_Registro'     => 'required|date',
-        'Contrato_adjunto'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-    ]);
+     * Actualiza el registro de un afiliado existente
+     */
+    public function update(Request $request, $id)
+    {
+        // 1. Validar datos
+        $request->validate([
+            'Afiliado_Nombres'   => 'required|string|max:150',
+            'Afiliado_DNI'       => 'required|digits:8',
+            'Afiliado_Telefono'  => 'nullable|string|max:20',
+            'Afiliado_Email'     => 'nullable|email|max:100',
+            'Apoderado_Parentesco' => 'nullable|string|max:100',
+            'Apoderado_Nombres' => 'nullable|string|max:150',
+            'Apoderado_DNI' => 'nullable|digits:8',
+            'Apoderado_Telefono' => 'nullable|string|max:20',
+            'Apoderado_Direccion' => 'nullable|string|max:255',
+            'Apoderado_Email' => 'nullable|email|max:100',
+            'Tiene_Firma_Huella' => 'nullable|boolean',
 
-    $afiliado = RegistroAfiliado::findOrFail($id);
-
-    DB::beginTransaction();
-    try {
-        // Obtenemos todos los datos excepto los restringidos
-        $data = $request->except([
-            'fecha_ini_vigencia', 
-            'fecha_fin_vigencia', 
-            'producto', 
-            'boleta', 
-            'total'
+            'Contrato_adjunto'   => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
-        // Manejo de nuevo archivo si se sube uno
-        if ($request->hasFile('Contrato_adjunto')) {
-            // Opcional: Eliminar el archivo anterior si existe
-            if ($afiliado->Contrato_adjunto) {
-                Storage::disk('public')->delete($afiliado->Contrato_adjunto);
+        $afiliado = RegistroAfiliado::findOrFail($id);
+
+        DB::beginTransaction();
+        try {
+            // Obtenemos todos los datos excepto los restringidos
+            $data = $request->except([
+                'fecha_ini_vigencia',
+                'fecha_fin_vigencia',
+                'producto',
+                'boleta',
+                'total'
+            ]);
+
+            // Manejo de nuevo archivo si se sube uno
+            if ($request->hasFile('Contrato_adjunto')) {
+                // Opcional: Eliminar el archivo anterior si existe
+                if ($afiliado->Contrato_adjunto) {
+                    Storage::disk('public')->delete($afiliado->Contrato_adjunto);
+                }
+                $path = $request->file('Contrato_adjunto')->store('contratos', 'public');
+                $data['Contrato_adjunto'] = $path; // O $data['Ruta_Contrato'] = $path;
             }
-            $data['Contrato_adjunto'] = $request->file('Contrato_adjunto')->store('contratos', 'public');
+
+            // Checkbox de firma
+            $data['Tiene_Firma_Huella'] = $request->has('Tiene_Firma_Huella') ? 1 : 0;
+
+            $afiliado->update($data);
+
+            DB::commit();
+            return redirect()->route('dashboard')->with('success', 'Registro actualizado correctamente.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error Update LUZCARD: " . $e->getMessage());
+            return back()->with('error', 'Error al actualizar: ' . $e->getMessage());
         }
-
-        // Checkbox de firma
-        $data['Tiene_Firma_Huella'] = $request->has('Tiene_Firma_Huella') ? 1 : 0;
-
-        $afiliado->update($data);
-
-        DB::commit();
-        return redirect()->route('dashboard')->with('success', 'Registro actualizado correctamente.');
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error("Error Update LUZCARD: " . $e->getMessage());
-        return back()->with('error', 'Error al actualizar: ' . $e->getMessage());
     }
-}
 }

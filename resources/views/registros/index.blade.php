@@ -93,10 +93,10 @@
                             @csrf
                         </form>
                         @endif
-                       {{-- Cambia $registro por $reg --}}
-<button onclick='editAfiliado(@json($reg))' class="text-blue-600 hover:text-blue-900 p-2" title="Editar Afiliado">
-    <i class="fa-solid fa-pen text-xl"></i> Editar
-</button>
+                        {{-- Cambia $registro por $reg --}}
+                        <button onclick='editAfiliado(@json($reg))' class="text-blue-600 hover:text-blue-900 p-2" title="Editar Afiliado">
+                            <i class="fa-solid fa-pen text-xl"></i> Editar
+                        </button>
 
                     </td>
                 </tr>
@@ -135,7 +135,7 @@
 
     // LÓGICA CLAVE: Si Laravel devolvió errores (validación fallida),
     // abrimos el modal automáticamente al cargar la página.
-    @if($errors->any())
+    @if($errors-> any())
     document.addEventListener('DOMContentLoaded', function() {
         openModal();
     });
@@ -194,98 +194,112 @@
             });
     }
 
-   function confirmarEnvio(id, email) {
-    // Verifica que SweetAlert esté cargado
-    if (typeof Swal === 'undefined') {
-        console.error('SweetAlert2 no está cargado');
-        document.getElementById('form-enviar-' + id).submit(); // Envío directo si falla Swal
-        return;
-    }
-
-    Swal.fire({
-        title: '¿Enviar Tarjeta Digital?',
-        text: "Se enviará el contrato y la tarjeta de felicitaciones a: " + email,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#B11A1A',
-        cancelButtonColor: '#8B8889',
-        confirmButtonText: 'Sí, enviar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Enviando...',
-                text: 'Por favor espere',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-            // Este ID debe coincidir con el ID del formulario en la tabla
-            document.getElementById('form-enviar-' + id).submit();
+    function confirmarEnvio(id, email) {
+        // Verifica que SweetAlert esté cargado
+        if (typeof Swal === 'undefined') {
+            console.error('SweetAlert2 no está cargado');
+            document.getElementById('form-enviar-' + id).submit(); // Envío directo si falla Swal
+            return;
         }
-    });
-}
-document.addEventListener('DOMContentLoaded', function() {
+
+        Swal.fire({
+            title: '¿Enviar Tarjeta Digital?'
+            , text: "Se enviará el contrato y la tarjeta de felicitaciones a: " + email
+            , icon: 'question'
+            , showCancelButton: true
+            , confirmButtonColor: '#B11A1A'
+            , cancelButtonColor: '#8B8889'
+            , confirmButtonText: 'Sí, enviar'
+            , cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Enviando...'
+                    , text: 'Por favor espere'
+                    , allowOutsideClick: false
+                    , didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                // Este ID debe coincidir con el ID del formulario en la tabla
+                document.getElementById('form-enviar-' + id).submit();
+            }
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function() {
         // Alerta de éxito desde el controlador
         @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: '¡Operación Exitosa!',
-                text: "{{ session('success') }}",
-                confirmButtonColor: '#B11A1A'
-            });
+        Swal.fire({
+            icon: 'success'
+            , title: '¡Operación Exitosa!'
+            , text: "{{ session('success') }}"
+            , confirmButtonColor: '#B11A1A'
+        });
         @endif
 
         // Alerta de error desde el controlador
         @if(session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'Ocurrió un error',
-                text: "{{ session('error') }}",
-                confirmButtonColor: '#B11A1A'
-            });
+        Swal.fire({
+            icon: 'error'
+            , title: 'Ocurrió un error'
+            , text: "{{ session('error') }}"
+            , confirmButtonColor: '#B11A1A'
+        });
         @endif
     });
+
     function editAfiliado(afiliado) {
     const form = document.getElementById('formAfiliado');
     const methodField = document.getElementById('methodField');
-    
+    const fechaInput = document.getElementById('Fecha_Registro');
     // 1. Cambiar Action y Método
     form.action = `/afiliados/${afiliado.ID_Registro}`;
     methodField.value = 'PUT';
+    if (fechaInput) {
+        fechaInput.removeAttribute('min'); 
+    }
 
-    // 2. Llenar campos de Texto/Select
-    form.querySelector('[name="Afiliado_DNI"]').value = afiliado.Afiliado_DNI;
-    form.querySelector('[name="Afiliado_Nombres"]').value = afiliado.Afiliado_Nombres;
-    form.querySelector('[name="Afiliado_Telefono"]').value = afiliado.Afiliado_Telefono;
-    form.querySelector('[name="Afiliado_Email"]').value = afiliado.Afiliado_Email;
-    form.querySelector('[name="Afiliado_Direccion"]').value = afiliado.Afiliado_Direccion;
-    form.querySelector('[name="Fecha_Registro"]').value = afiliado.Fecha_Registro.split('T')[0]; // Formato Y-m-d
-    form.querySelector('[name="Orientador"]').value = afiliado.Orientador;
+    // 2. Llenar campos con validación de nulos
+    const setVal = (name, val) => {
+        const input = form.querySelector(`[name="${name}"]`);
+        if (input) input.value = val || '';
+    };
+
+    setVal('Afiliado_DNI', afiliado.Afiliado_DNI);
+    setVal('Afiliado_Nombres', afiliado.Afiliado_Nombres);
+    setVal('Afiliado_Telefono', afiliado.Afiliado_Telefono);
+    setVal('Afiliado_Email', afiliado.Afiliado_Email);
+    setVal('Afiliado_Direccion', afiliado.Afiliado_Direccion);
+    setVal('Orientador', afiliado.Orientador);
 
     // Datos Apoderado
-    form.querySelector('[name="Apoderado_Parentesco"]').value = afiliado.Apoderado_Parentesco || '';
-    form.querySelector('[name="Apoderado_Nombres"]').value = afiliado.Apoderado_Nombres || '';
-    form.querySelector('[name="Apoderado_DNI"]').value = afiliado.Apoderado_DNI || '';
-    form.querySelector('[name="Apoderado_Telefono"]').value = afiliado.Apoderado_Telefono || '';
+    setVal('Apoderado_Parentesco', afiliado.Apoderado_Parentesco);
+    setVal('Apoderado_Nombres', afiliado.Apoderado_Nombres);
+    setVal('Apoderado_DNI', afiliado.Apoderado_DNI);
+    setVal('Apoderado_Telefono', afiliado.Apoderado_Telefono);
+    setVal('Apoderado_Direccion', afiliado.Apoderado_Direccion);
+    setVal('Apoderado_Email', afiliado.Apoderado_Email);
 
     // Checkbox
-    form.querySelector('[name="Tiene_Firma_Huella"]').checked = afiliado.Tiene_Firma_Huella == 1;
+    const checkFirma = form.querySelector('[name="Tiene_Firma_Huella"]');
+    if (checkFirma) checkFirma.checked = (afiliado.Tiene_Firma_Huella == 1);
 
-    // 3. Cambiar título del modal
-    document.querySelector('#modalRegistro h2').innerHTML = '<i class="fa-regular fa-pen-to-square"></i> Editar Afiliado';
+    // 3. UI: Cambiar título y botón
+    document.querySelector('#modalRegistro h2').innerHTML = '<i class="fa-regular fa-pen-to-square"></i> Actualizar Afiliado #' + afiliado.ID_Registro;
+    form.querySelector('button[type="submit"]').innerHTML = '<i class="fa-solid fa-sync"></i> Actualizar Cambios';
 
     // 4. Abrir Modal
     document.getElementById('modalRegistro').classList.remove('hidden');
 }
+    // Función para resetear el modal cuando sea "Nuevo Registro"
+    function openCreateModal() {
+        const form = document.getElementById('formAfiliado');
+        form.reset();
+        form.action = "{{ route('afiliados.store') }}";
+        document.getElementById('methodField').value = 'POST';
+        document.querySelector('#modalRegistro h2').innerHTML = '<i class="fa-regular fa-id-card"></i> Registro de Afiliado';
+        document.getElementById('modalRegistro').classList.remove('hidden');
+    }
 
-// Función para resetear el modal cuando sea "Nuevo Registro"
-function openCreateModal() {
-    const form = document.getElementById('formAfiliado');
-    form.reset();
-    form.action = "{{ route('afiliados.store') }}";
-    document.getElementById('methodField').value = 'POST';
-    document.querySelector('#modalRegistro h2').innerHTML = '<i class="fa-regular fa-id-card"></i> Registro de Afiliado';
-    document.getElementById('modalRegistro').classList.remove('hidden');
-}
 </script>
 @endpush
