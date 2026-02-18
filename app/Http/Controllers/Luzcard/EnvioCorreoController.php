@@ -12,99 +12,65 @@ use Illuminate\Support\Facades\Storage;
 
 class EnvioCorreoController extends Controller
 {
-    /**
-     * Generar imagen de la tarjeta digital con los datos del afiliado
-     */
+
     private function generarImagenTarjeta($afiliado)
     {
         try {
-            // Ruta de la imagen base (tu tarjeta diseñada)
-            $imagenBase = public_path('images/tarjeta-base-luzcard.png');
-
-            // Si no existe la imagen base, retornar null
-            if (!file_exists($imagenBase)) {
-                Log::warning("No se encontró la imagen base de la tarjeta en: {$imagenBase}");
-                return null;
-            }
-
-            // Crear imagen desde PNG
-            $imagen = imagecreatefrompng($imagenBase);
-
-            if (!$imagen) {
-                Log::error("No se pudo crear la imagen desde: {$imagenBase}");
-                return null;
-            }
-
-            // Definir color blanco para el texto
-            $colorBlanco = imagecolorallocate($imagen, 255, 255, 255);
-
-            // Ruta de la fuente (opcional - si tienes una fuente TTF)
+            $imagenBase = public_path('images/fondo-tarjeta.png');
             $fuente = public_path('fonts/Arial-Bold.ttf');
 
-            // Agregar texto a la tarjeta
-            if (file_exists($fuente)) {
-                // Con fuente TTF (más bonito)
-                imagettftext(
-                    $imagen,
-                    18,
-                    0,
-                    320,
-                    165,
-                    $colorBlanco,
-                    $fuente,
-                    strtoupper($afiliado->Afiliado_Nombres)
-                );
-                imagettftext(
-                    $imagen,
-                    16,
-                    0,
-                    320,
-                    190,
-                    $colorBlanco,
-                    $fuente,
-                    'DNI: ' . $afiliado->Afiliado_DNI
-                );
-
-                // Fecha de vigencia
-                $fechaVigencia = $afiliado->fecha_fin_vigencia
-                    ? \Carbon\Carbon::parse($afiliado->fecha_fin_vigencia)->format('d/m/Y')
-                    : \Carbon\Carbon::parse($afiliado->Fecha_Registro)->addYear()->format('d/m/Y');
-                imagettftext($imagen, 14, 0, 520, 267, $colorBlanco, $fuente, $fechaVigencia);
-            } else {
-                // Sin fuente TTF (más simple, usando fuentes built-in)
-                imagestring($imagen, 5, 320, 155, strtoupper($afiliado->Afiliado_Nombres), $colorBlanco);
-                imagestring($imagen, 5, 320, 180, 'DNI: ' . $afiliado->Afiliado_DNI, $colorBlanco);
-
-                $fechaVigencia = $afiliado->fecha_fin_vigencia
-                    ? \Carbon\Carbon::parse($afiliado->fecha_fin_vigencia)->format('d/m/Y')
-                    : \Carbon\Carbon::parse($afiliado->Fecha_Registro)->addYear()->format('d/m/Y');
-                imagestring($imagen, 4, 520, 257, $fechaVigencia, $colorBlanco);
+            if (!file_exists($imagenBase)) {
+                Log::error("Falta imagen base en: " . $imagenBase);
+                return null;
             }
 
-            // Definir ruta de salida
+            $imagen = imagecreatefrompng($imagenBase);
+            $colorBlanco = imagecolorallocate($imagen, 255, 255, 255);
+
+            // VERIFICACIÓN CRÍTICA DE FUENTE
+            if (file_exists($fuente)) {
+                // 1. NOMBRE DEL PACIENTE
+                // X: Bajamos a 480 para moverlo más a la izquierda
+                // Y: 430 para centrarlo verticalmente en la zona media
+                imagettftext($imagen, 22, 0, 480, 430, $colorBlanco, $fuente, strtoupper($afiliado->Afiliado_Nombres));
+
+                // 2. DNI
+                // X: 480 (Alineado con el nombre para que se vea ordenado)
+                // Y: 480 (Espaciado uniforme debajo del nombre)
+                imagettftext($imagen, 20, 0, 480, 480, $colorBlanco, $fuente, 'DNI: ' . $afiliado->Afiliado_DNI);
+
+                // 3. FECHA DE VALIDEZ
+                // Calculamos la fecha (1 año después del registro si no tiene fin de vigencia)
+                $fechaVigencia = $afiliado->fecha_fin_vigencia
+                    ? \Carbon\Carbon::parse($afiliado->fecha_fin_vigencia)->format('d / m / y')
+                    : \Carbon\Carbon::parse($afiliado->Fecha_Registro)->addYear()->format('d / m / y');
+
+                // "VÁLIDA HASTA" - Lo movemos también a la izquierda (X: 480) pero más abajo (Y: 780)
+                imagettftext($imagen, 12, 0, 480, 530, $colorBlanco, $fuente, "VÁLIDA HASTA  :");
+
+                // La fecha centrada al lado del texto anterior
+                imagettftext($imagen, 18, 0, 600, 530, $colorBlanco, $fuente, $fechaVigencia);
+            } else {
+                // FALLBACK: Si no hay fuente TTF, usar fuente básica de sistema para no enviar la tarjeta vacía
+                Log::warning("Fuente no encontrada en $fuente. Usando imagestring.");
+                imagestring($imagen, 5, 580, 480, strtoupper($afiliado->Afiliado_Nombres), $colorBlanco);
+                imagestring($imagen, 5, 580, 520, 'DNI: ' . $afiliado->Afiliado_DNI, $colorBlanco);
+            }
+
             $nombreArchivo = 'tarjeta_' . $afiliado->Afiliado_DNI . '_' . time() . '.png';
             $carpetaSalida = storage_path('app/public/tarjetas_generadas');
 
-            // Crear directorio si no existe
             if (!file_exists($carpetaSalida)) {
                 mkdir($carpetaSalida, 0755, true);
             }
 
             $rutaSalida = $carpetaSalida . '/' . $nombreArchivo;
-
-            // Guardar imagen
-            $guardado = imagepng($imagen, $rutaSalida);
+            imagepng($imagen, $rutaSalida);
             imagedestroy($imagen);
 
-            if ($guardado) {
-                Log::info("Tarjeta generada exitosamente: {$rutaSalida}");
-                return $rutaSalida;
-            } else {
-                Log::error("Error al guardar la imagen en: {$rutaSalida}");
-                return null;
-            }
+            return $rutaSalida;
         } catch (\Exception $e) {
-            Log::error("Error al generar imagen de tarjeta: " . $e->getMessage());
+            Log::error("Error en LuzCard: " . $e->getMessage());
             return null;
         }
     }
@@ -124,7 +90,7 @@ class EnvioCorreoController extends Controller
             $rutaTarjeta = $this->generarImagenTarjeta($afiliado);
 
             // El envío se procesa aquí. Si falla, el catch lo atrapará
-                    Mail::to($afiliado->Afiliado_Email)->send(new TarjetaLuzCardMail($afiliado, $rutaTarjeta));
+            Mail::to($afiliado->Afiliado_Email)->send(new TarjetaLuzCardMail($afiliado, $rutaTarjeta));
 
             Log::info("Tarjeta enviada exitosamente a: {$afiliado->Afiliado_Email}");
             return back()->with('success', '✅ ¡Tarjeta enviada exitosamente a ' . $afiliado->Afiliado_Email . '!');
@@ -198,15 +164,8 @@ class EnvioCorreoController extends Controller
     public function previsualizarCorreo($id)
     {
         $afiliado = RegistroAfiliado::findOrFail($id);
-
-        return view('emails.tarjeta-luzcard', [
-            'nombre' => $afiliado->Afiliado_Nombres,
-            'dni' => $afiliado->Afiliado_DNI,
-            'fechaRegistro' => \Carbon\Carbon::parse($afiliado->Fecha_Registro)->format('d/m/Y'),
-            'fechaVigencia' => $afiliado->fecha_fin_vigencia
-                ? \Carbon\Carbon::parse($afiliado->fecha_fin_vigencia)->format('d/m/Y')
-                : \Carbon\Carbon::parse($afiliado->Fecha_Registro)->addYear()->format('d/m/Y'),
-        ]);
+        $ruta = $this->generarImagenTarjeta($afiliado);
+        return response()->file($ruta); // Esto te abrirá solo la imagen en el navegador
     }
 
     /**

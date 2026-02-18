@@ -17,7 +17,7 @@ class SetTenantConnection
         if (Session::has('db_connection')) {
             $connection = Session::get('db_connection');
 
-            // 1. Configurar la conexión por defecto en tiempo de ejecución
+            // 1. Configurar la conexión por defecto en tiempo de A
             Config::set('database.default', $connection);
 
             // 2. Purgar y reconectar para asegurar que se use la nueva config

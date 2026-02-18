@@ -1,30 +1,21 @@
-<div class="content">
-    <h1 style="color: #B11A1A;">¡Felicidades, {{ $nombre }}!</h1>
-    <p>Es un placer darte la bienvenida a la familia de <strong>Clínica La Luz</strong>.</p>
-    
-    <div style="position: relative; width: 100%; max-width: 500px; height: 310px; margin: 20px auto; font-family: Arial, sans-serif; color: white; overflow: hidden; border-radius: 15px; shadow: 0 4px 15px rgba(0,0,0,0.2);">
-        <img src="{{ asset('images/fondo-tarjeta.png') }}" style="width: 100%; height: 100%; display: block;">
-
-        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-            <div style="position: absolute; top: 52%; right: 7%; text-align: right; width: 80%;">
-                <span style="font-size: 20px; font-weight: bold; text-transform: uppercase; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-                    {{ $nombre }}
-                </span>
-            </div>
-            <div style="position: absolute; top: 65%; right: 7%; text-align: right;">
-                <span style="font-size: 16px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-                    DNI: {{ $dni }}
-                </span>
-            </div>
-            <div style="position: absolute; bottom: 8%; right: 7%; text-align: right;">
-                <div style="font-size: 9px; text-transform: uppercase; opacity: 0.9;">Válida hasta</div>
-                <span style="font-size: 14px; font-weight: bold;">
-                    {{ $fechaVigencia }}
-                </span>
-            </div>
-        </div>
+<div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+    <div style="background-color: #B11A1A; padding: 20px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 24px;">¡Bienvenido a LUZCARD!</h1>
     </div>
-    <p>Ya eres titular de tu tarjeta <strong>LUZCARD</strong>. Con ella, podrás acceder a descuentos exclusivos...</p>
-    
-    <p>Adjunto a este correo encontrarás tu <strong>Contrato de Afiliación Digital</strong> y tu tarjeta lista para imprimir si lo deseas.</p>
+
+    <div style="padding: 30px; text-align: center;">
+        <p style="font-size: 16px;">Hola <strong>{{ $nombre }}</strong>,</p>
+        <p>Es un placer darte la bienvenida a la familia de <strong>Clínica La Luz</strong>. Aquí tienes tu nueva tarjeta digital:</p>
+        
+        <div style="margin: 25px 0;">
+            <img src="cid:tarjeta_digital" alt="Tu Tarjeta LUZCARD" style="width: 100%; max-width: 500px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.15);">
+        </div>
+
+        <p style="font-size: 14px; color: #666;">Puedes guardarla en tu celular o imprimirla para presentarla en nuestras sedes y acceder a tus beneficios.</p>
+    </div>
+
+    <div style="background-color: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #999;">
+        <p>Este es un correo automático, por favor no lo respondas.<br>
+        &copy; {{ date('Y') }} Clínica La Luz - Todos los derechos reservados.</p>
+    </div>
 </div>

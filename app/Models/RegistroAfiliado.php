@@ -39,7 +39,7 @@ class RegistroAfiliado extends Model
         'Estado_Registro',
         'Fecha_Creacion',
         'fecha_ini_vigencia',
-        'fecha_fin_vigencia',
+        '   ',
         'producto',
         'boleta',
         'total',

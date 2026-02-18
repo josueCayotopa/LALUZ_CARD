@@ -40,6 +40,7 @@ class TarjetaLuzCardMail extends Mailable
     /**
      * Get the message content definition.
      */
+    // En el método content() o build() de tu Mailable
     public function content(): Content
     {
         return new Content(
@@ -47,35 +48,33 @@ class TarjetaLuzCardMail extends Mailable
             with: [
                 'nombre' => $this->afiliado->Afiliado_Nombres,
                 'dni' => $this->afiliado->Afiliado_DNI,
-                'fechaRegistro' => \Carbon\Carbon::parse($this->afiliado->Fecha_Registro)->format('d/m/Y'),
-                'fechaVigencia' => $this->afiliado->fecha_fin_vigencia 
+                'fechaVigencia' => $this->afiliado->fecha_fin_vigencia
                     ? \Carbon\Carbon::parse($this->afiliado->fecha_fin_vigencia)->format('d/m/Y')
                     : \Carbon\Carbon::parse($this->afiliado->Fecha_Registro)->addYear()->format('d/m/Y'),
             ],
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     */
     public function attachments(): array
     {
         $attachments = [];
 
-        // Adjuntar imagen de la tarjeta si existe
+        // Esta es la clave: Adjuntar la imagen generada como "Inline"
         if ($this->rutaTarjetaImagen && file_exists($this->rutaTarjetaImagen)) {
             $attachments[] = Attachment::fromPath($this->rutaTarjetaImagen)
-                ->as('TarjetaLuzCard_' . $this->afiliado->Afiliado_DNI . '.png')
+                ->as('tarjeta_digital') // Este ID debe coincidir con el CID de la vista
                 ->withMime('image/png');
         }
 
-        // Adjuntar el contrato PDF si existe
+        // Tu adjunto del contrato sigue igual
         if ($this->afiliado->Ruta_Contrato && Storage::disk('public')->exists($this->afiliado->Ruta_Contrato)) {
             $attachments[] = Attachment::fromStorageDisk('public', $this->afiliado->Ruta_Contrato)
-                ->as('Contrato_LuzCard_' . $this->afiliado->Afiliado_DNI . '.pdf')
-                ->withMime('application/pdf');
+                ->as('Contrato_LuzCard.pdf');
         }
 
         return $attachments;
     }
+    /**
+     * Get the attachments for the message.
+     */
 }
