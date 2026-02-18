@@ -45,11 +45,11 @@ class EnvioCorreoController extends Controller
                     ? \Carbon\Carbon::parse($afiliado->fecha_fin_vigencia)->format('d / m / y')
                     : \Carbon\Carbon::parse($afiliado->Fecha_Registro)->addYear()->format('d / m / y');
 
-                // "VÁLIDA HASTA" - Lo movemos también a la izquierda (X: 480) pero más abajo (Y: 780)
-                imagettftext($imagen, 12, 0, 480, 530, $colorBlanco, $fuente, "VÁLIDA HASTA  :");
+                // "VÁLIDA HASTA" - Lo movemos también a la izquierda (X: 480) pero más abajo (Y: 500)
+                imagettftext($imagen, 12, 0, 480, 500, $colorBlanco, $fuente, "VÁLIDA HASTA");
 
                 // La fecha centrada al lado del texto anterior
-                imagettftext($imagen, 18, 0, 600, 530, $colorBlanco, $fuente, $fechaVigencia);
+                imagettftext($imagen, 18, 0, 500, 500, $colorBlanco, $fuente, $fechaVigencia);
             } else {
                 // FALLBACK: Si no hay fuente TTF, usar fuente básica de sistema para no enviar la tarjeta vacía
                 Log::warning("Fuente no encontrada en $fuente. Usando imagestring.");
