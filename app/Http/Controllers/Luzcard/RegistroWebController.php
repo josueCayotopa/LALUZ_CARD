@@ -30,8 +30,12 @@ class RegistroWebController extends Controller
             });
         }
 
-        // Paginación de 10 en 10, ordenado por el más reciente
-        $registros = $query->orderBy('ID_Registro', 'desc')->paginate(10);
+        // ORDENAR POR FECHA: Cambiamos 'ID_Registro' por 'Fecha_Registro' o 'Fecha_Creacion'
+        // 'desc' significa descendente (de mayor/más nuevo a menor/más viejo)
+        $registros = $query->orderBy('Fecha_Registro', 'desc')
+            ->orderBy('ID_Registro', 'desc') // Segundo criterio por si hay fechas iguales
+            ->paginate(10);
+
         $vendedores = Vendedor::where('IND_BAJA', 'N')->get();
 
         return view('registros.index', compact('registros', 'vendedores'));
